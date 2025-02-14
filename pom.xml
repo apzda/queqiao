@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.apzda.cloud</groupId>
+        <artifactId>apzda-cloud-gsvc-parent</artifactId>
+        <version>3.4.0-SNAPSHOT</version>
+    </parent>
+    <description>鹊桥中继器</description>
+    <artifactId>queqiao</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>queqiao-core</module>
+        <module>queqiao-server</module>
+        <module>queqiao-client</module>
+        <module>queqiao-service</module>
+        <module>queqiao-brokers</module>
+    </modules>
+
+    <properties>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>queqiao-core</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>queqiao-client</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>queqiao-service</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <!-- builtin brokers -->
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>queqiao-wechat-mp</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>queqiao-fuyou-pay</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

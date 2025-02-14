@@ -1,0 +1,13 @@
+server:
+  port: 8080
+  shutdown: graceful
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 512
+  undertow:
+    max-http-post-size: 100MB
+
+spring:
+  application:
+    name: queqiao-server
