@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,18 @@
  */
 package com.apzda.cloud.queqiao.core;
 
-import com.apzda.cloud.queqiao.config.BrokerConfig;
+import com.apzda.cloud.queqiao.config.NotificationConfig;
 import jakarta.annotation.Nonnull;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.servlet.function.ServerRequest;
-import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+public interface IPostman {
 
-	default boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+	default boolean init(@Nonnull NotificationConfig config, @Nonnull ApplicationContext context) {
 		return true;
 	}
 
@@ -37,10 +35,6 @@ public interface IBroker {
 
 	}
 
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
-
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	void delivery();
 
 }

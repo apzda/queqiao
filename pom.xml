@@ -10,6 +10,7 @@
     </parent>
     <description>鹊桥中继器</description>
     <artifactId>queqiao</artifactId>
+    <name>QueQiao</name>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -22,7 +23,9 @@
     </modules>
 
     <properties>
+        <wx.java.version>4.7.0</wx.java.version>
     </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -50,6 +53,25 @@
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>queqiao-fuyou-pay</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <!-- third -->
+            <dependency>
+                <groupId>com.github.binarywang</groupId>
+                <artifactId>weixin-java-mp</artifactId>
+                <version>${wx.java.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.binarywang</groupId>
+                <artifactId>weixin-java-common</artifactId>
+                <version>${wx.java.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>error_prone_annotations</artifactId>
+                        <groupId>com.google.errorprone</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

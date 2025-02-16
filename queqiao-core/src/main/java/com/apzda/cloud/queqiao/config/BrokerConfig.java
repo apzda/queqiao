@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,33 +14,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.core;
+package com.apzda.cloud.queqiao.config;
 
-import com.apzda.cloud.queqiao.config.BrokerConfig;
-import jakarta.annotation.Nonnull;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.servlet.function.ServerRequest;
-import org.springframework.web.servlet.function.ServerResponse;
+import com.apzda.cloud.queqiao.core.IBroker;
+import lombok.Data;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+@Data
+public class BrokerConfig {
 
-	default boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		return true;
-	}
+	/**
+	 * 接口地址
+	 */
+	private String api;
 
-	default void destroy() {
+	/**
+	 * 代理人ID
+	 */
+	private Class<? extends IBroker> broker;
 
-	}
+	private String appId;
 
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
+	private String account;
 
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	private String appKey;
+
+	private String appSecret;
+
+	private String token;
+
+	private String extra;
+
+	private Map<String, Environment> environment = new HashMap<>();
 
 }

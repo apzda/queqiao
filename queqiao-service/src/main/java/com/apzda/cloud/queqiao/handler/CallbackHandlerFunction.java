@@ -16,22 +16,42 @@
  */
 package com.apzda.cloud.queqiao.handler;
 
+import com.apzda.cloud.queqiao.broker.BrokerManager;
 import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.function.HandlerFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
+
+import static com.apzda.cloud.queqiao.constrant.QueQiaoVals.UPSTREAM_HEADER;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
+@Slf4j
 public class CallbackHandlerFunction implements HandlerFunction<ServerResponse> {
 
 	@Override
 	@Nonnull
 	public ServerResponse handle(@Nonnull ServerRequest request) throws Exception {
-		return ServerResponse.ok().body("callback");
+		val upstreams = request.headers().header(UPSTREAM_HEADER);
+		if (CollectionUtils.isEmpty(upstreams)) {
+			return ServerResponse.status(404).build();
+		}
+		val upstream = request.pathVariable("upstream");
+		log.debug("Received callback of upstream : {}", upstream);
+		try {
+			val broker = BrokerManager.getBroker(upstream);
+			return broker.onCallback(request);
+		}
+		catch (Exception e) {
+			log.error("Cannot handle: {}\nparams={}", request.uri(), request.params(), e);
+			return ServerResponse.status(404).build();
+		}
 	}
 
 }

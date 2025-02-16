@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,33 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.core;
+package com.apzda.cloud.queqiao.broker.wechat.config;
 
-import com.apzda.cloud.queqiao.config.BrokerConfig;
-import jakarta.annotation.Nonnull;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.servlet.function.ServerRequest;
-import org.springframework.web.servlet.function.ServerResponse;
+import lombok.Data;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+@Data
+public class WxMpExtraConfig {
 
-	default boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		return true;
-	}
+	private String aesKey;
 
-	default void destroy() {
-
-	}
-
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
-
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	private Boolean stableAccessToken;
 
 }

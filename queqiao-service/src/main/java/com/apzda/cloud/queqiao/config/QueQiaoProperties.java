@@ -16,8 +16,15 @@
  */
 package com.apzda.cloud.queqiao.config;
 
+import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Scope;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -26,8 +33,33 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  **/
 @ConfigurationProperties(prefix = "apzda.cloud.queqiao")
 @Data
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class QueQiaoProperties {
 
-	private String callbackPath = "/callback";
+	private String url = "http://localhost";
+
+	private String callbackPath = "";
+
+	private String upstreamHeader = QueQiaoVals.UPSTREAM_HEADER;
+
+	private Map<String, BrokerConfig> broker = new HashMap<>();
+
+	public String theCallbackPath(String upstream) {
+		var cb = callbackPath;
+		if (StringUtils.isNotBlank(cb)) {
+			cb = "/" + StringUtils.strip(cb, "/");
+		}
+		var host = StringUtils.stripEnd(url, "/");
+
+		return String.format("%s%s/%s/", host, cb, upstream);
+	}
+
+	public String theCallbackPathPattern() {
+		var cb = callbackPath;
+		if (StringUtils.isNotBlank(cb)) {
+			cb = "/" + StringUtils.strip(cb, "/");
+		}
+		return String.format("%s/{upstream:[0-9a-z_]+}/**", cb);
+	}
 
 }

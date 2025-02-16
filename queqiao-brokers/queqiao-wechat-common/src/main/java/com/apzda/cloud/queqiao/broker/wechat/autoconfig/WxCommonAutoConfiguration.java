@@ -14,9 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.config;
+package com.apzda.cloud.queqiao.broker.wechat.autoconfig;
 
-import com.apzda.cloud.queqiao.broker.BrokerManager;
+import com.apzda.cloud.gsvc.infra.TempStorage;
+import com.apzda.cloud.queqiao.broker.wechat.common.WxInfraOps;
+import com.apzda.cloud.queqiao.broker.wechat.config.WxConfigProperties;
+import me.chanjar.weixin.common.redis.WxRedisOps;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,13 +32,14 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0.0
  **/
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(QueQiaoProperties.class)
-public class QueQiaoSrvConfiguration {
+@AutoConfigureAfter(name = "com.apzda.cloud.gsvc.autoconfigure.GsvcAutoConfiguration")
+@EnableConfigurationProperties(WxConfigProperties.class)
+public class WxCommonAutoConfiguration {
 
 	@Bean
-	public static BrokerManager createBrokerManager() {
-		return new BrokerManager() {
-		};
+	@ConditionalOnBean(TempStorage.class)
+	WxRedisOps wxRedisOps(TempStorage tempStorage) {
+		return new WxInfraOps(tempStorage);
 	}
 
 }

@@ -16,6 +16,7 @@
  */
 package com.apzda.cloud.queqiao.config;
 
+import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import com.apzda.cloud.queqiao.handler.CallbackHandlerFunction;
 import com.apzda.cloud.queqiao.handler.RelayHandlerFunction;
 import lombok.val;
@@ -34,25 +35,26 @@ import org.springframework.web.servlet.function.ServerResponse;
 @Configuration
 public class QueQiaoEndpoints {
 
-	private static final String RELAY_HEADER = "X-Relay";
-
 	@Bean
-	public RouterFunction<ServerResponse> relayRouterFunction() {
-		val relay = new RelayHandlerFunction();
+	public RouterFunction<ServerResponse> relayRouterFunction(QueQiaoProperties properties) {
+		val func = new RelayHandlerFunction();
+		val headerName = StringUtils.defaultIfBlank(properties.getUpstreamHeader(), QueQiaoVals.UPSTREAM_HEADER);
+
 		return RouterFunctions.route().path("/**", builder -> {
-			builder.nest(request -> request.headers().asHttpHeaders().containsKey(RELAY_HEADER), b -> {
-				b.GET(relay).POST(relay).DELETE(relay).PUT(relay).PATCH(relay);
+			builder.nest(request -> request.headers().asHttpHeaders().containsKey(headerName), b -> {
+				b.GET(func).POST(func).DELETE(func).PUT(func).PATCH(func);
 			}).build();
 		}).build();
 	};
 
 	@Bean
 	public RouterFunction<ServerResponse> callbackRouterFunction(QueQiaoProperties properties) {
-		val callback = new CallbackHandlerFunction();
-		val callbackPath = StringUtils.defaultIfBlank(properties.getCallbackPath(), "/callback");
-		return RouterFunctions.route().path(String.format("%s/**", callbackPath), builder -> {
-			builder.nest(request -> !request.headers().asHttpHeaders().containsKey(RELAY_HEADER), b -> {
-				b.GET(callback).POST(callback);
+		val func = new CallbackHandlerFunction();
+		val headerName = StringUtils.defaultIfBlank(properties.getUpstreamHeader(), QueQiaoVals.UPSTREAM_HEADER);
+
+		return RouterFunctions.route().path(properties.theCallbackPathPattern(), builder -> {
+			builder.nest(request -> !request.headers().asHttpHeaders().containsKey(headerName), b -> {
+				b.GET(func).POST(func);
 			}).build();
 		}).build();
 	};
