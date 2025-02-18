@@ -34,7 +34,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorResp {
+public class WxErrorResp {
 
 	private static final Map<Integer, String> errors = new HashMap<>() {
 		{
@@ -226,14 +226,14 @@ public class ErrorResp {
 
 	private String errmsg;
 
-	public ErrorResp(int errcode) {
+	public WxErrorResp(int errcode) {
 		this.errcode = errcode;
 		this.errmsg = errors.getOrDefault(errcode, "未知错误");
 	}
 
 	@Nonnull
-	public static ErrorResp error(int errcode) {
-		return new ErrorResp(errcode);
+	public static WxErrorResp error(int errcode) {
+		return new WxErrorResp(errcode);
 	}
 
 }

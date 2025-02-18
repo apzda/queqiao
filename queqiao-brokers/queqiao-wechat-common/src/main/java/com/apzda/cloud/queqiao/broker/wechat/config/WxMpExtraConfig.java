@@ -28,6 +28,6 @@ public class WxMpExtraConfig {
 
 	private String aesKey;
 
-	private Boolean stableAccessToken;
+	private boolean stableAccessToken;
 
 }

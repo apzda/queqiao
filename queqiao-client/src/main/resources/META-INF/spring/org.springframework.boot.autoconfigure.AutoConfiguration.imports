@@ -1,1 +1,2 @@
-com.apzda.cloud.queqiao.autoconfig.QueQiaoClientAutoConfiguration
+com.apzda.cloud.queqiao.autoconfig.HttpClientAutoConfiguration
+com.apzda.cloud.queqiao.autoconfig.QueQiaoMpAutoConfiguration

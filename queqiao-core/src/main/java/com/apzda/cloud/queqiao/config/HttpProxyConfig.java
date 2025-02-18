@@ -16,14 +16,11 @@
  */
 package com.apzda.cloud.queqiao.config;
 
-import com.apzda.cloud.queqiao.broker.IBroker;
 import lombok.Data;
 import org.springframework.boot.convert.DurationUnit;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -31,44 +28,15 @@ import java.util.List;
  * @since 1.0.0
  **/
 @Data
-public class BrokerConfig {
+public class HttpProxyConfig {
 
-	/**
-	 * 上游接口地址
-	 */
-	private String host;
-
-	/**
-	 * 代理人
-	 */
-	private Class<? extends IBroker> broker;
-
-	private String appId;
-
-	private String account;
-
-	private String appKey;
-
-	private String appSecret;
-
-	private String token;
-
-	// 额外配置ID
-	private String extra;
-
-	// 重试错误码
-	private List<String> retryErrCodes = new ArrayList<>();
-
-	// 重试HTTP响应码
-	private List<Integer> retryHttpCodes = new ArrayList<>();
-
-	// 重试次数
-	private int retryTimes = 5;
-
-	/**
-	 * 重试间隔
-	 */
 	@DurationUnit(ChronoUnit.SECONDS)
-	private Duration retryInterval = Duration.ofSeconds(1);
+	private Duration readTimeout = Duration.ofSeconds(10);
+
+	@DurationUnit(ChronoUnit.SECONDS)
+	private Duration writeTimeout = Duration.ofSeconds(30);
+
+	@DurationUnit(ChronoUnit.SECONDS)
+	private Duration connectTimeout = Duration.ofSeconds(5);
 
 }

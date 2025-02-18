@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.core;
+package com.apzda.cloud.queqiao.proxy;
 
-import com.apzda.cloud.queqiao.config.BrokerConfig;
 import jakarta.annotation.Nonnull;
-import org.springframework.context.ApplicationContext;
+import jakarta.annotation.Nullable;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
@@ -27,20 +26,8 @@ import org.springframework.web.servlet.function.ServerResponse;
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+public interface IHttpProxy {
 
-	default boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		return true;
-	}
-
-	default void destroy() {
-
-	}
-
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
-
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	ServerResponse handle(@Nonnull ServerRequest request, @Nullable IRetryHandler retry);
 
 }

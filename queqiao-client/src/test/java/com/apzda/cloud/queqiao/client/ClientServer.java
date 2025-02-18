@@ -14,27 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.constrant;
+package com.apzda.cloud.queqiao.client;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface QueQiaoVals {
+@SpringBootApplication
+public class ClientServer {
 
-	String UPSTREAM_HEADER = "X-Upstream";
-
-	String WX_REAL_HOST_HEADER = "X-Wx-Host";
-
-	String WX_MP_PREFIX = "/_wx_mp";
-
-	String WX_API_PREFIX = "/_wx_api";
-
-	String WX_OPEN_PREFIX = "/_wx_open";
-
-	String BROKER_REQUEST_WRAPPER = "QQ_BROKER_REQ_WRAPPER";
-
-	String CONTENT_CACHING_REQUEST_WRAPPER = "QQ_C_C_REQ_WRAPPER";
+	public static void main(String[] args) {
+		SpringApplication.run(ClientServer.class, args);
+	}
 
 }

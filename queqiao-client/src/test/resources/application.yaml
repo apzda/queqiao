@@ -1,0 +1,17 @@
+weixin:
+  http:
+    so-timeout: 600000
+    connection-timeout: 600000
+  mp:
+    account:
+      abc:
+        app-secret: ce84938461d4a97151ad8213c3f44cf0
+        token: ce84938461d4a97151ad8213c3f44cf0
+        retry-times: 2
+        retry-interval: 1s
+    use-redis: true
+    host: http://localhost:31081
+
+logging:
+  level:
+    web: debug

@@ -17,34 +17,47 @@
 package com.apzda.cloud.queqiao.broker.wechat.http;
 
 import com.apzda.cloud.queqiao.config.BrokerConfig;
+import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.function.ServerRequest;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public class CommonQuery {
+@Slf4j
+@Getter
+public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 
+	@Getter(AccessLevel.PRIVATE)
 	private final static String[] fields = new String[] { "signature", "timestamp", "nonce", "echostr", "openid",
 			"encrypt_type", "msg_signature", "secret", "appid", "access_token" };
 
-	private final Map<String, String> params = new HashMap<>();
+	protected final Map<String, String> params = new HashMap<>();
 
-	public CommonQuery(@Nonnull ServerRequest request) {
+	public WxCommonRequestWrapper(@Nonnull ServerRequest request) {
+		super(request);
 		for (String field : fields) {
 			params.put(field, request.param(field).orElse(null));
 		}
 	}
 
 	@Nonnull
-	public static CommonQuery from(@Nonnull ServerRequest request) {
-		return new CommonQuery(request);
+	public static WxCommonRequestWrapper from(@Nonnull ServerRequest request) {
+		return new WxCommonRequestWrapper(request);
 	}
 
 	@Nullable
@@ -96,8 +109,24 @@ public class CommonQuery {
 		return params.get("access_token");
 	}
 
-	public boolean checkRequest(BrokerConfig config) {
+	public boolean checkAuthentication(BrokerConfig config) {
+		val secret = getSecret();
+		val appid = getAppid();
+		if (!StringUtils.isAllBlank(secret, appid)) {
+			return Objects.equals(secret, config.getAppSecret()) && Objects.equals(appid, config.getAppId());
+		}
+
 		return true;
+	}
+
+	public MultiValueMap<String, String> queryParams() {
+		val mParams = new LinkedMultiValueMap<String, String>();
+		for (Map.Entry<String, String> entry : params.entrySet()) {
+			if (entry.getValue() != null) {
+				mParams.add(entry.getKey(), entry.getValue());
+			}
+		}
+		return mParams;
 	}
 
 }

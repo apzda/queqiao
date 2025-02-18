@@ -14,27 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.core;
+package com.apzda.cloud.queqiao.broker;
 
-import com.apzda.cloud.queqiao.config.NotificationConfig;
+import com.apzda.cloud.queqiao.config.BrokerConfig;
+import com.apzda.cloud.queqiao.proxy.IHttpProxy;
+import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IPostman {
+public abstract class AbstractHttpBroker implements IBroker {
 
-	default boolean init(@Nonnull NotificationConfig config, @Nonnull ApplicationContext context) {
+	protected BrokerConfig config;
+
+	protected IHttpProxy httpProxy;
+
+	public boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+		this.config = config;
+		this.httpProxy = context.getBean(IHttpProxy.class);
 		return true;
 	}
 
-	default void destroy() {
-
+	@Nonnull
+	protected ServerResponse forward(ServerRequest request, @Nullable IRetryHandler retry) {
+		return httpProxy.handle(request, retry);
 	}
 
-	void delivery();
+	@Nonnull
+	protected ServerResponse forward(ServerRequest request) {
+		return forward(request, null);
+	}
 
 }

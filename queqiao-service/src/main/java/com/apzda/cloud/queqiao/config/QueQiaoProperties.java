@@ -44,6 +44,8 @@ public class QueQiaoProperties {
 
 	private Map<String, BrokerConfig> broker = new HashMap<>();
 
+	private HttpProxyConfig proxy = new HttpProxyConfig();
+
 	public String theCallbackPath(String upstream) {
 		var cb = callbackPath;
 		if (StringUtils.isNotBlank(cb)) {

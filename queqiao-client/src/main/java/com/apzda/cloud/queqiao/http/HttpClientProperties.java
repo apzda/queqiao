@@ -14,27 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.constrant;
+package com.apzda.cloud.queqiao.http;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface QueQiaoVals {
+@Data
+@ConfigurationProperties(prefix = "weixin.http")
+public class HttpClientProperties {
 
-	String UPSTREAM_HEADER = "X-Upstream";
+	private int connectionRequestTimeout = -1;
 
-	String WX_REAL_HOST_HEADER = "X-Wx-Host";
+	private int connectionTimeout = 5000;
 
-	String WX_MP_PREFIX = "/_wx_mp";
+	private int soTimeout = 5000;
 
-	String WX_API_PREFIX = "/_wx_api";
+	private int idleConnTimeout = 60000;
 
-	String WX_OPEN_PREFIX = "/_wx_open";
+	private int checkWaitTime = 60000;
 
-	String BROKER_REQUEST_WRAPPER = "QQ_BROKER_REQ_WRAPPER";
+	private int maxConnPerHost = 10;
 
-	String CONTENT_CACHING_REQUEST_WRAPPER = "QQ_C_C_REQ_WRAPPER";
+	private int maxTotalConn = 50;
+
+	private String userAgent;
+
+	private String proxyHost;
+
+	private int proxyPort;
 
 }

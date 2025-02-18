@@ -14,25 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.config;
+package com.apzda.cloud.queqiao.postman;
 
-import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.apzda.cloud.queqiao.config.NotificationConfig;
+import jakarta.annotation.Nonnull;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-@Data
-public class Environment {
+public interface IPostman {
 
-	private boolean enabled;
+	default boolean init(@Nonnull NotificationConfig config, @Nonnull ApplicationContext context) {
+		return true;
+	}
 
-	private List<String> filters = new ArrayList<>();
+	default void destroy() {
 
-	private List<NotificationConfig> notification = new ArrayList<>();
+	}
+
+	void delivery();
 
 }

@@ -1,0 +1,31 @@
+logging:
+  level:
+    com.apzda.cloud.queqiao: debug
+
+apzda:
+  cloud:
+    queqiao:
+      url: https://wxtest.mini.dorabao.com
+      broker:
+        abc:
+          broker: com.apzda.cloud.queqiao.broker.wechat.mp.WechatMpBroker
+          app-secret: ce84938461d4a97151ad8213c3f44cf0
+          token: ce84938461d4a97151ad8213c3f44cf0
+          extra: abc
+          retry-times: 1
+          retry-interval: 1s
+          retry-err-codes:
+            - 40014
+            - 40001
+      extra:
+        mp:
+          abc:
+            aes-key: "CE84938461D4A97151AD8213C3F44CF1"
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 5
+      client-type: lettuce

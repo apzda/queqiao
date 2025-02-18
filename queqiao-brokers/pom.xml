@@ -15,6 +15,7 @@
         <module>queqiao-wechat-mp</module>
         <module>queqiao-fuyou-pay</module>
         <module>queqiao-wechat-common</module>
+        <module>queqiao-broker-common</module>
     </modules>
 
     <dependencyManagement>

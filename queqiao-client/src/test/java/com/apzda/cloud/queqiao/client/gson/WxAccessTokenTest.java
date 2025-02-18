@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,16 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.autoconfig;
+package com.apzda.cloud.queqiao.client.gson;
 
-import org.springframework.context.annotation.Configuration;
+import lombok.val;
+import me.chanjar.weixin.common.bean.WxAccessToken;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-@Configuration(proxyBeanMethods = false)
-public class QueQiaoClientAutoConfiguration {
+public class WxAccessTokenTest {
+
+	@Test
+	void test() {
+		// given
+		String accessToken = "{\"access_token\":\"89_gTGKbF9HPIWUI5yTe8h68A_TCftgBgbcMOMnNW4Hqg786XidiI0jTETcsWMPtiFbTWpmuSALUr8-U34chjW-qPmTCCR0ea4UFqsBUeF7bmw9W-BOLRH8gk0yanMOACaAFAAMO\",\"expires_in\":5890}";
+
+		// when
+		val token = WxAccessToken.fromJson(accessToken);
+		// then
+		assertThat(token).isNotNull();
+		assertThat(token.getExpiresIn()).isEqualTo(5890);
+	}
 
 }

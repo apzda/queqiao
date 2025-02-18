@@ -28,7 +28,7 @@ import java.util.Map;
  * @version 1.0.0
  * @since 1.0.0
  **/
-@ConfigurationProperties(prefix = "wx")
+@ConfigurationProperties(prefix = "apzda.cloud.queqiao.extra")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WxConfigProperties {

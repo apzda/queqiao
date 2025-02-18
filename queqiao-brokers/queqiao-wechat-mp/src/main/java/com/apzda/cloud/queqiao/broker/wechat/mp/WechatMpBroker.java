@@ -18,20 +18,27 @@ package com.apzda.cloud.queqiao.broker.wechat.mp;
 
 import cn.hutool.core.date.DateUtil;
 import com.apzda.cloud.gsvc.infra.TempStorage;
+import com.apzda.cloud.queqiao.broker.AbstractHttpBroker;
 import com.apzda.cloud.queqiao.broker.wechat.config.WxConfigProperties;
 import com.apzda.cloud.queqiao.broker.wechat.config.WxMpExtraConfig;
-import com.apzda.cloud.queqiao.broker.wechat.http.CommonQuery;
-import com.apzda.cloud.queqiao.broker.wechat.http.ErrorResp;
+import com.apzda.cloud.queqiao.broker.wechat.dto.WxAccessToken;
+import com.apzda.cloud.queqiao.broker.wechat.http.WxCommonRequestWrapper;
+import com.apzda.cloud.queqiao.broker.wechat.http.WxErrorResp;
+import com.apzda.cloud.queqiao.broker.wechat.mp.handler.WxMpRetryHandler;
+import com.apzda.cloud.queqiao.broker.wechat.mp.http.WxMpRequestWrapper;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
-import com.apzda.cloud.queqiao.core.IBroker;
+import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import com.apzda.cloud.queqiao.storage.StringData;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.common.redis.WxRedisOps;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
+import me.chanjar.weixin.mp.config.WxMpHostConfig;
 import me.chanjar.weixin.mp.config.impl.WxMpRedisConfigImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -40,8 +47,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -53,7 +64,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0.0
  **/
 @Slf4j
-public class WechatMpBroker implements IBroker {
+public class WechatMpBroker extends AbstractHttpBroker {
 
 	private static final String GET_ACCESS_TOKEN_URL = "/cgi-bin/token";
 
@@ -65,7 +76,7 @@ public class WechatMpBroker implements IBroker {
 
 	private TempStorage storage;
 
-	private BrokerConfig config;
+	private IRetryHandler retryHandler;
 
 	private WxMpExtraConfig extraConfig;
 
@@ -77,10 +88,14 @@ public class WechatMpBroker implements IBroker {
 
 	@Override
 	public boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		this.config = config;
+		if (!super.setup(config, context)) {
+			return false;
+		}
+
 		this.storage = context.getBean(TempStorage.class);
 		val wxRedisOps = context.getBean(WxRedisOps.class);
 
+		@SuppressWarnings("all")
 		val conf = new WxMpRedisConfigImpl(wxRedisOps, "wxMp") {
 			@Override
 			public long getExpiresTime() {
@@ -104,13 +119,14 @@ public class WechatMpBroker implements IBroker {
 			if (StringUtils.isNotBlank(extraConfig.getAesKey())) {
 				conf.setAesKey(extraConfig.getAesKey());
 			}
-			if (extraConfig.getStableAccessToken() != null) {
-				conf.setUseStableAccessToken(extraConfig.getStableAccessToken());
-			}
+			conf.setUseStableAccessToken(extraConfig.isStableAccessToken());
 		}
 
 		wxMpService = new WxMpServiceImpl();
 		wxMpService.setWxMpConfigStorage(conf);
+
+		retryHandler = new WxMpRetryHandler(config, wxMpService);
+
 		if (refreshTask != null) {
 			refreshTask.cancel(true);
 			refreshTask = null;
@@ -118,7 +134,11 @@ public class WechatMpBroker implements IBroker {
 
 		refreshTask = executor.scheduleWithFixedDelay(() -> {
 			try {
-				val accessToken = wxMpService.getAccessToken();
+				val expiredAt = wxMpService.getWxMpConfigStorage().getExpiresTime();
+				val force = expiredAt - DateUtil.currentSeconds() <= 300;
+				val accessToken = wxMpService.getAccessToken(force);
+				log.debug("Refresh(force={}) accessToken[{}] successfully: {}", force, conf.getAppId(), accessToken);
+
 				try {
 					val at = storage.load(accessToken, StringData.class);
 					if (at.isEmpty() || at.get().getExpireTime().toSeconds() <= 0) {
@@ -127,11 +147,11 @@ public class WechatMpBroker implements IBroker {
 					}
 				}
 				catch (Exception e) {
-					log.warn("Can't save access token - {}", e.getMessage());
+					log.warn("Can't save accessToken[{}] - {}", config.getAppId(), e.getMessage());
 				}
 			}
 			catch (Exception e) {
-				log.warn("Can not get access token - {}", e.getMessage());
+				log.warn("Can not get accessToken[{}] - {}", config.getAppId(), e.getMessage());
 			}
 		}, 0, 60, TimeUnit.SECONDS);
 
@@ -150,31 +170,121 @@ public class WechatMpBroker implements IBroker {
 
 	@Nonnull
 	@Override
-	public ServerResponse onRequest(@Nonnull ServerRequest request) {
-		val query = CommonQuery.from(request);
-		val accessToken = query.getAccessToken();
-		if (StringUtils.isNotBlank(accessToken) && !storage.exist(accessToken)) {
+	public ServerResponse onRequest(@Nonnull ServerRequest request) throws URISyntaxException {
+		val query = new WxMpRequestWrapper(request);
+		val uri = request.uri();
+		val path = uri.getPath();
+		if (GET_ACCESS_TOKEN_URL.equals(path) || GET_STABLE_ACCESS_TOKEN_URL.equals(path)) {
+			return getAccessToken(query);
+		}
+		else {
+			val response = checkAccessToken(query, path);
+			if (response != null) {
+				return response;
+			}
+			// 转发前准备
+			val builder = UriComponentsBuilder.fromUri(uri).query(null);
+			val realHost = request.headers().firstHeader(QueQiaoVals.WX_REAL_HOST_HEADER);
+
+			final URI realUri;
+			if ("apiHost".equals(realHost)) {
+				realUri = UriComponentsBuilder.fromUriString(WxMpHostConfig.API_DEFAULT_HOST_URL).build().toUri();
+			}
+			else if ("mpHost".equals(realHost)) {
+				realUri = UriComponentsBuilder.fromUriString(WxMpHostConfig.MP_DEFAULT_HOST_URL).build().toUri();
+			}
+			else if ("openHost".equals(realHost)) {
+				realUri = UriComponentsBuilder.fromUriString(WxMpHostConfig.OPEN_DEFAULT_HOST_URL).build().toUri();
+			}
+			else {
+				return ServerResponse.status(404).build();
+			}
+
+			val wxUri = builder.scheme(realUri.getScheme())
+				.host(realUri.getHost())
+				.port(realUri.getPort())
+				.path(realUri.getPath())
+				.queryParams(query.queryParams())
+				.build()
+				.toUri();
+
+			val req = ServerRequest.from(request)
+				.params(Map::clear)
+				.uri(wxUri)
+				.attribute(QueQiaoVals.BROKER_REQUEST_WRAPPER, query)
+				.build();
+
+			try {
+				return forward(req, retryHandler);
+			}
+			catch (Exception e) {
+				return ServerResponse.status(500).body(e);
+			}
+		}
+	}
+
+	private ServerResponse checkAccessToken(WxMpRequestWrapper query, String uri) {
+		var accessToken = query.getAccessToken();
+		if (StringUtils.isBlank(accessToken) || !storage.exist(accessToken)) {
 			// 不合法的 access_token
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(ErrorResp.error(40014));
+			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(40014));
 		}
-		if (!query.checkRequest(config)) {
+		final String localAccessToken;
+		try {
+			localAccessToken = wxMpService.getAccessToken();
+		}
+		catch (WxErrorException e) {
+			log.error("Can't get local accessToken[{}] to call({}) - {}", query.getAppid(), uri, e.getMessage(), e);
+			val error = e.getError();
+			return ServerResponse.ok()
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(error != null ? error : WxErrorResp.error(-1));
+		}
+		catch (Exception e) {
+			log.error("Can't get local accessToken[{}] to call({}) - {}", query.getAppid(), uri, e.getMessage(), e);
+			return ServerResponse.status(502).build();
+		}
+
+		if (!localAccessToken.equals(accessToken)) {
+			query.getParams().replace("access_token", accessToken);
+		}
+		return null;
+	}
+
+	@Nonnull
+	private ServerResponse getAccessToken(@Nonnull WxCommonRequestWrapper query) {
+		if (!query.checkAuthentication(config)) {
 			// 获取 access_token 时 AppSecret 错误
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(ErrorResp.error(40001));
+			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(40001));
 		}
-		val method = request.method();
-		val uri = request.uri().getPath();
-		// todo: 获取accessToken特殊处理
+		try {
+			val realAccessToken = wxMpService.getAccessToken();
+			val wxAccessToken = new WxAccessToken();
+			wxAccessToken.setAccessToken(realAccessToken);
+			val expiresTime = wxMpService.getWxMpConfigStorage().getExpiresTime();
 
-		// todo: 转发到微信服务器
+			wxAccessToken.setExpiresIn((int) (expiresTime - DateUtil.currentSeconds()));
 
-		return ServerResponse.ok().build();
+			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(wxAccessToken);
+		}
+		catch (WxErrorException e) {
+			log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
+			val error = e.getError();
+			return ServerResponse.ok()
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(error != null ? error : WxErrorResp.error(-1));
+		}
+		catch (Exception e) {
+			log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
+			return ServerResponse.status(502).build();
+		}
 	}
 
 	@Nonnull
 	@Override
 	public ServerResponse onCallback(@Nonnull ServerRequest request) {
 		val method = request.method();
-		val query = CommonQuery.from(request);
+		val query = WxCommonRequestWrapper.from(request);
 		val timestamp = query.getTimestamp();
 		val nonce = query.getNonce();
 		val signature = query.getSignature();
@@ -195,10 +305,11 @@ public class WechatMpBroker implements IBroker {
 			val encryptType = query.getEncryptType();
 			val msgSignature = query.getMsgSignature();
 			val requestBody = getRequestBody(request);
-			log.debug(
-					"接收微信请求：[openid=[{}], [signature=[{}], encType=[{}], msgSignature=[{}],"
-							+ " timestamp=[{}], nonce=[{}], requestBody=[\n{}\n] ",
-					openid, signature, encryptType, msgSignature, timestamp, nonce, requestBody);
+			log.debug("""
+					 接收微信请求：[openid=[{}], [signature=[{}], encType=[{}], msgSignature=[{}],\
+					 timestamp=[{}], nonce=[{}], requestBody=[
+					{}
+					]""", openid, signature, encryptType, msgSignature, timestamp, nonce, requestBody);
 			final WxMpXmlMessage inMessage;
 			if (encryptType == null) {
 				inMessage = WxMpXmlMessage.fromXml(requestBody);

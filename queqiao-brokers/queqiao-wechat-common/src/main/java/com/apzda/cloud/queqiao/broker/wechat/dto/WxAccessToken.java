@@ -14,27 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.constrant;
+package com.apzda.cloud.queqiao.broker.wechat.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface QueQiaoVals {
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class WxAccessToken {
 
-	String UPSTREAM_HEADER = "X-Upstream";
+	@JsonProperty("access_token")
+	private String accessToken;
 
-	String WX_REAL_HOST_HEADER = "X-Wx-Host";
-
-	String WX_MP_PREFIX = "/_wx_mp";
-
-	String WX_API_PREFIX = "/_wx_api";
-
-	String WX_OPEN_PREFIX = "/_wx_open";
-
-	String BROKER_REQUEST_WRAPPER = "QQ_BROKER_REQ_WRAPPER";
-
-	String CONTENT_CACHING_REQUEST_WRAPPER = "QQ_C_C_REQ_WRAPPER";
+	@JsonProperty("expires_in")
+	private int expiresIn = -1;
 
 }

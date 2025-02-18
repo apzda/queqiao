@@ -18,7 +18,6 @@ package com.apzda.cloud.queqiao.broker;
 
 import com.apzda.cloud.queqiao.config.BrokerConfig;
 import com.apzda.cloud.queqiao.config.QueQiaoProperties;
-import com.apzda.cloud.queqiao.core.IBroker;
 import com.apzda.cloud.queqiao.exception.BrokerNotFoundException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.PreDestroy;
