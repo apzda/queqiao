@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -65,6 +66,7 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 		if (!request.attributes().containsKey(QueQiaoVals.BROKER_REQUEST_WRAPPER)) {
 			request.attributes().put(QueQiaoVals.BROKER_REQUEST_WRAPPER, new HttpBrokerRequestWrapper(request));
 		}
+
 		return handle_(request, retry, 0);
 	}
 
@@ -84,23 +86,31 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 		filtered.remove("X-Forwarded-Port");
 		filtered.remove("Host");
 
-		val wrapper = (HttpBrokerRequestWrapper) request.attribute(QueQiaoVals.BROKER_REQUEST_WRAPPER)
-			.orElse(new HttpBrokerRequestWrapper(request));
+		val wrapper = HttpBrokerRequestWrapper.from(request);
 
 		val requestBody = wrapper.getRequestBody();
+		val multiPart = wrapper.getMultipartData();
 
-		val proxyRequest = client.method(request.method()).uri(request.uri()).headers(headers -> {
+		var proxyRequest = client.method(request.method()).uri(request.uri()).headers(headers -> {
 			headers.add("X-Request-ID", GsvcContextHolder.getRequestId());
 			headers.putAll(filtered);
 			headers.remove(HttpHeaders.HOST);
-		}).body(BodyInserters.fromValue(requestBody));
+		});
+
+		WebClient.RequestHeadersSpec<?> requestHeadersSpec = proxyRequest.body(BodyInserters.empty());
+		if (StringUtils.isNotBlank(requestBody)) {
+			requestHeadersSpec = proxyRequest.body(BodyInserters.fromValue(requestBody));
+		}
+		else if (multiPart != null) {
+			requestHeadersSpec = proxyRequest.body(BodyInserters.fromMultipartData(multiPart));
+		}
 
 		final ServerResponse serverResponse;
 		if (retry == null) {
-			serverResponse = doForward(proxyRequest, request);
+			serverResponse = doForward(requestHeadersSpec, request);
 		}
 		else {
-			serverResponse = doForward(proxyRequest, request, retry, retried);
+			serverResponse = doForward(requestHeadersSpec, request, retry, retried);
 		}
 
 		return serverResponse;

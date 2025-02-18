@@ -17,6 +17,7 @@
 package com.apzda.cloud.queqiao.broker.wechat.http;
 
 import com.apzda.cloud.queqiao.config.BrokerConfig;
+import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -57,7 +58,14 @@ public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 
 	@Nonnull
 	public static WxCommonRequestWrapper from(@Nonnull ServerRequest request) {
-		return new WxCommonRequestWrapper(request);
+		val wrapper = request.attribute(QueQiaoVals.BROKER_REQUEST_WRAPPER).orElse(null);
+		if (wrapper instanceof WxCommonRequestWrapper wxCommonRequestWrapper) {
+			return wxCommonRequestWrapper;
+		}
+
+		val requestWrapper = new WxCommonRequestWrapper(request);
+		request.attributes().put(QueQiaoVals.BROKER_REQUEST_WRAPPER, requestWrapper);
+		return requestWrapper;
 	}
 
 	@Nullable
@@ -109,7 +117,7 @@ public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 		return params.get("access_token");
 	}
 
-	public boolean checkAuthentication(BrokerConfig config) {
+	public boolean checkAuthentication(BrokerConfig config) throws Exception {
 		val secret = getSecret();
 		val appid = getAppid();
 		if (!StringUtils.isAllBlank(secret, appid)) {

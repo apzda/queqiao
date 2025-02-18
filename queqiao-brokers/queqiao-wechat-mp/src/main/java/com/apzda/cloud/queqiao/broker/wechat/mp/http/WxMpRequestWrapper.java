@@ -47,7 +47,7 @@ public class WxMpRequestWrapper extends WxCommonRequestWrapper {
 	}
 
 	@Override
-	public boolean checkAuthentication(BrokerConfig config) {
+	public boolean checkAuthentication(BrokerConfig config) throws Exception {
 		if (super.checkAuthentication(config) && StringUtils.isNotBlank(getRequestBody())) {
 			try {
 				val dto = getRequestBody(WxMpStableAccessTokenRequest.class);

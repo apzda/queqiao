@@ -17,13 +17,18 @@
 package com.apzda.cloud.queqiao.broker;
 
 import com.apzda.cloud.queqiao.config.BrokerConfig;
+import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import com.apzda.cloud.queqiao.proxy.IHttpProxy;
 import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -40,6 +45,26 @@ public abstract class AbstractHttpBroker implements IBroker {
 		this.config = config;
 		this.httpProxy = context.getBean(IHttpProxy.class);
 		return true;
+	}
+
+	@Nonnull
+	protected ServerRequest changeTarget(@Nonnull ServerRequest request) {
+		val builder = UriComponentsBuilder.fromUri(request.uri());
+		val host = UriComponentsBuilder.fromUriString(config.getHost()).build();
+
+		builder.scheme(host.getScheme()).host(host.getHost()).port(host.getPort());
+
+		if (host.getPath() != null && !"/".equals(host.getPath())) {
+			builder.replacePath(
+					String.format("%s%s", host.getPath(), StringUtils.defaultIfBlank(request.uri().getPath(), "")));
+		}
+
+		val wrapper = new HttpBrokerRequestWrapper(request);
+
+		return ServerRequest.from(request)
+			.uri(builder.build().toUri())
+			.attribute(QueQiaoVals.BROKER_REQUEST_WRAPPER, wrapper)
+			.build();
 	}
 
 	@Nonnull

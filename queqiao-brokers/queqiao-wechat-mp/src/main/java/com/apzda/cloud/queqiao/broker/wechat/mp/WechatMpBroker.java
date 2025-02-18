@@ -203,7 +203,6 @@ public class WechatMpBroker extends AbstractHttpBroker {
 			val wxUri = builder.scheme(realUri.getScheme())
 				.host(realUri.getHost())
 				.port(realUri.getPort())
-				.path(realUri.getPath())
 				.queryParams(query.queryParams())
 				.build()
 				.toUri();
@@ -253,30 +252,35 @@ public class WechatMpBroker extends AbstractHttpBroker {
 
 	@Nonnull
 	private ServerResponse getAccessToken(@Nonnull WxCommonRequestWrapper query) {
-		if (!query.checkAuthentication(config)) {
-			// 获取 access_token 时 AppSecret 错误
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(40001));
-		}
 		try {
-			val realAccessToken = wxMpService.getAccessToken();
-			val wxAccessToken = new WxAccessToken();
-			wxAccessToken.setAccessToken(realAccessToken);
-			val expiresTime = wxMpService.getWxMpConfigStorage().getExpiresTime();
+			if (!query.checkAuthentication(config)) {
+				// 获取 access_token 时 AppSecret 错误
+				return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(40001));
+			}
+			try {
+				val realAccessToken = wxMpService.getAccessToken();
+				val wxAccessToken = new WxAccessToken();
+				wxAccessToken.setAccessToken(realAccessToken);
+				val expiresTime = wxMpService.getWxMpConfigStorage().getExpiresTime();
 
-			wxAccessToken.setExpiresIn((int) (expiresTime - DateUtil.currentSeconds()));
+				wxAccessToken.setExpiresIn((int) (expiresTime - DateUtil.currentSeconds()));
 
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(wxAccessToken);
-		}
-		catch (WxErrorException e) {
-			log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
-			val error = e.getError();
-			return ServerResponse.ok()
-				.contentType(MediaType.APPLICATION_JSON)
-				.body(error != null ? error : WxErrorResp.error(-1));
+				return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(wxAccessToken);
+			}
+			catch (WxErrorException e) {
+				log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
+				val error = e.getError();
+				return ServerResponse.ok()
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(error != null ? error : WxErrorResp.error(-1));
+			}
+			catch (Exception e) {
+				log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
+				return ServerResponse.status(502).build();
+			}
 		}
 		catch (Exception e) {
-			log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
-			return ServerResponse.status(502).build();
+			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(-1));
 		}
 	}
 

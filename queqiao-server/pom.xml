@@ -23,6 +23,10 @@
             <groupId>com.apzda.cloud</groupId>
             <artifactId>queqiao-wechat-mp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apzda.cloud</groupId>
+            <artifactId>queqiao-demo-broker</artifactId>
+        </dependency>
         <!-- starters -->
         <dependency>
             <groupId>com.apzda.cloud</groupId>

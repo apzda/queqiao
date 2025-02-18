@@ -17,6 +17,9 @@ apzda:
           retry-err-codes:
             - 40014
             - 40001
+        simple:
+          host: http://localhost:8080
+          broker: com.apzda.cloud.queqiao.broker.demo.DemoBroker
       extra:
         mp:
           abc:
