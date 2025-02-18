@@ -35,6 +35,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 import reactor.core.publisher.Flux;
@@ -160,13 +161,9 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 
 			if (!retry.exceedsMaxRetries(retried) && (retry.needRetryByHttpStatus(responseStatus)
 					|| retry.needRetryByErrCode(oriRequest, response))) {
-				try {
-					TimeUnit.MILLISECONDS.sleep(retry.getRetryInterval().toMillis());
-					log.warn("Retrying {}", oriRequest.uri());
-					return handle_(retry.createRetryRequest(oriRequest), retry, retried + 1);
-				}
-				catch (InterruptedException e) {
-					log.warn("Interrupted while waiting for retrying from {}", oriRequest.uri());
+				val resp = doRetry(oriRequest, retry, retried + 1);
+				if (resp != null) {
+					return resp;
 				}
 			}
 			// 头过滤
@@ -186,12 +183,38 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 			if (ie.getCause() instanceof TimeoutException) {
 				return ServerResponse.status(504).build();
 			}
+			return ServerResponse.status(500).body(ie.getMessage());
 		}
 		catch (Exception e) {
-			log.error(e.getMessage(), e);
+			if (e instanceof WebClientResponseException re) {
+				val status = re.getStatusCode().value();
+				if (!retry.exceedsMaxRetries(retried) && retry.needRetryByHttpStatus(status)) {
+					val response = doRetry(oriRequest, retry, retried + 1);
+					if (response != null) {
+						return response;
+					}
+				}
+			}
+			log.warn("Can't get response from upstream {} - {}", oriRequest.uri(), e.getMessage());
 		}
 
 		return ServerResponse.status(502).build();
+	}
+
+	@Nullable
+	private ServerResponse doRetry(@Nonnull ServerRequest oriRequest, @Nonnull IRetryHandler retry, int retried) {
+		try {
+			TimeUnit.MILLISECONDS.sleep(retry.getRetryInterval().toMillis());
+			log.warn("Retrying {}", oriRequest.uri());
+			return handle_(retry.createRetryRequest(oriRequest), retry, retried + 1);
+		}
+		catch (InterruptedException ie) {
+			log.warn("""
+					Interrupted while waiting for retrying
+					【请求地址】: {}
+					【异常信息】: {}""", oriRequest.uri(), ie.getMessage());
+		}
+		return null;
 	}
 
 	private List<HttpHeadersFilter> getHeadersFilters() {
