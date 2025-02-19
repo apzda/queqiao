@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -45,9 +46,11 @@ import java.io.IOException;
 public class DemoController {
 
 	@PostMapping("/_/demoA")
-	public String demoA(@RequestParam("file") MultipartFile file, @RequestParam("email") String email)
+	public List<String> demoA(@RequestParam("file") MultipartFile file, @RequestParam("email") String email,
+			@RequestParam("name") String name)
+
 			throws IOException {
-		return new String(file.getBytes());
+		return List.of(email, name, new String(file.getBytes()));
 	}
 
 	@GetMapping("/test/demoA")

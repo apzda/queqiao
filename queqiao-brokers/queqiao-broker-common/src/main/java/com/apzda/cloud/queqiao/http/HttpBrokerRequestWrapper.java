@@ -221,7 +221,7 @@ public class HttpBrokerRequestWrapper {
 	}
 
 	@Nonnull
-	private Object decode(@Nonnull Part part) {
+	private AsyncPart decode(@Nonnull Part part) {
 		val httpHeaders = new HttpHeaders();
 		val headerNames = part.getHeaderNames();
 		if (!CollectionUtils.isEmpty(headerNames)) {

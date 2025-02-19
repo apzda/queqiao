@@ -20,6 +20,9 @@ apzda:
         simple:
           host: http://localhost:8080
           broker: com.apzda.cloud.queqiao.broker.demo.DemoBroker
+          retry-times: 1
+          retry-http-codes:
+            - 400
       extra:
         mp:
           abc:
