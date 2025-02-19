@@ -28,9 +28,11 @@ import com.apzda.cloud.queqiao.broker.wechat.mp.handler.WxMpRetryHandler;
 import com.apzda.cloud.queqiao.broker.wechat.mp.http.WxMpRequestWrapper;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
 import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import com.apzda.cloud.queqiao.storage.StringData;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -50,6 +52,7 @@ import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -172,6 +175,12 @@ public class WechatMpBroker extends AbstractHttpBroker {
 		log.info("WechatMpBroker executor destroyed");
 	}
 
+	@Nullable
+	@Override
+	public IRetryHandler getRetryHandler() {
+		return retryHandler;
+	}
+
 	@Nonnull
 	@Override
 	public ServerResponse onRequest(@Nonnull ServerRequest request) {
@@ -226,6 +235,7 @@ public class WechatMpBroker extends AbstractHttpBroker {
 		}
 	}
 
+	@Nullable
 	private ServerResponse checkAccessToken(@Nonnull WxMpRequestWrapper query, String uri) {
 		var accessToken = query.getAccessToken();
 		if (StringUtils.isBlank(accessToken) || !storage.exist(accessToken)) {
@@ -300,6 +310,7 @@ public class WechatMpBroker extends AbstractHttpBroker {
 		if (!wxMpService.checkSignature(timestamp, nonce, signature)) {
 			return ServerResponse.status(403).body("Invalid Signature!");
 		}
+
 		if (method == HttpMethod.GET) {
 			val echoStr = query.getEchoStr();
 			if (StringUtils.isNotBlank(echoStr)) {
@@ -313,40 +324,51 @@ public class WechatMpBroker extends AbstractHttpBroker {
 			val openid = query.getOpenid();
 			val encryptType = query.getEncryptType();
 			val msgSignature = query.getMsgSignature();
-			val requestBody = getRequestBody(request);
-			log.debug("""
-					 接收微信请求：[openid=[{}], [signature=[{}], encType=[{}], msgSignature=[{}],\
+			val wrapper = HttpBrokerRequestWrapper.from(request);
+
+			final String requestBody;
+			try {
+				requestBody = wrapper.getRequestBody();
+			}
+			catch (IOException e) {
+				log.error("Can't get callback body for broker[{}] - {}", id, e.getMessage());
+				return ServerResponse.status(500).build();
+			}
+
+			log.trace("""
+					 接收微信请求[{}]：[openid=[{}], [signature=[{}], encType=[{}], msgSignature=[{}],\
 					 timestamp=[{}], nonce=[{}], requestBody=[
 					{}
-					]""", openid, signature, encryptType, msgSignature, timestamp, nonce, requestBody);
+					]""", id, openid, signature, encryptType, msgSignature, timestamp, nonce, requestBody);
+
 			final WxMpXmlMessage inMessage;
 			if (encryptType == null) {
 				inMessage = WxMpXmlMessage.fromXml(requestBody);
-				log.debug("\n消息内容为：\n{} ", inMessage.toString());
+				if (log.isTraceEnabled()) {
+					log.trace("\n消息内容为[{}]: \n{} ", id, inMessage.toString());
+				}
 			}
 			else if ("aes".equalsIgnoreCase(encryptType)) {
 				// aes加密的消息
 				inMessage = WxMpXmlMessage.fromEncryptedXml(requestBody, wxMpService.getWxMpConfigStorage(), timestamp,
 						nonce, msgSignature);
-				log.debug("\n消息解密后内容为：\n{} ", inMessage.toString());
+				if (log.isTraceEnabled()) {
+					log.trace("\n消息解密后内容为[{}]：\n{} ", id, inMessage.toString());
+				}
 			}
 			else {
 				return ServerResponse.status(HttpStatus.NO_CONTENT).body("");
 			}
-			// todo: 回调路由
+
+			val result = notify(inMessage, requestBody, request);
+			if (result != null) {
+				return result;
+			}
+
 			return ServerResponse.ok().body("success");
 		}
-		return ServerResponse.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-	}
 
-	@Nonnull
-	private String getRequestBody(@Nonnull ServerRequest request) {
-		try {
-			return request.body(String.class);
-		}
-		catch (Exception e) {
-			return "<xml>" + e.getMessage() + "</xml>";
-		}
+		return ServerResponse.status(HttpStatus.METHOD_NOT_ALLOWED).build();
 	}
 
 }

@@ -86,6 +86,7 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 		filtered.remove("X-Forwarded-Host");
 		filtered.remove("X-Forwarded-Port");
 		filtered.remove("Host");
+		filtered.remove("Content-Length");
 
 		val wrapper = HttpBrokerRequestWrapper.from(request);
 
@@ -93,9 +94,10 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 		val multiPart = wrapper.getMultipartData();
 
 		var proxyRequest = client.method(request.method()).uri(request.uri()).headers(headers -> {
-			headers.add("X-Request-ID", GsvcContextHolder.getRequestId());
 			headers.putAll(filtered);
 			headers.remove(HttpHeaders.HOST);
+			headers.remove("X-Forwarded-Proto");
+			headers.remove("X-Forwarded-Host");
 		});
 
 		WebClient.RequestHeadersSpec<?> requestHeadersSpec = proxyRequest.body(BodyInserters.empty());
@@ -104,6 +106,9 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 		}
 		else if (multiPart != null) {
 			requestHeadersSpec = proxyRequest.body(BodyInserters.fromMultipartData(multiPart));
+		}
+		else {
+			log.warn("request body is null or empty");
 		}
 
 		final ServerResponse serverResponse;

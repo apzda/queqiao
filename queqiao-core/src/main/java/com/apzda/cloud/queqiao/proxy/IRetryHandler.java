@@ -37,6 +37,8 @@ public interface IRetryHandler {
 
 	boolean needRetryByErrCode(@Nonnull ServerRequest request, ResponseEntity<String> response);
 
+	boolean needRenotify(ResponseEntity<String> response);
+
 	Duration getRetryInterval();
 
 }

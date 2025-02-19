@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,39 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.broker;
+package com.apzda.cloud.queqiao.notify;
 
-import com.apzda.cloud.queqiao.config.BrokerConfig;
-import com.apzda.cloud.queqiao.proxy.IRetryHandler;
+import com.apzda.cloud.queqiao.broker.IBroker;
+import com.apzda.cloud.queqiao.config.NotificationConfig;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
+
+import java.util.Map;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+public interface INotificationHandler {
 
-	default boolean setup(String id, @Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		return true;
-	}
+	NotificationConfig getConfig();
 
-	default void destroy() {
-	}
-
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
-
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	boolean matches(Map<String, Object> context);
 
 	@Nullable
-	default IRetryHandler getRetryHandler() {
-		return null;
-	}
+	ServerResponse notify(@Nonnull IBroker broker, @Nullable Object response, String body,
+			@Nonnull ServerRequest request);
 
 }

@@ -17,6 +17,11 @@ apzda:
           retry-err-codes:
             - 40014
             - 40001
+          notifications:
+            - postman: asyncHttp
+              receipt: http://localhost:8080/cb/abc/
+              filter:
+                - "params?.openid == 'o7L3v7Ndtc5RDJGiCP01N0hjJPy8'"
         simple:
           host: http://localhost:8080
           broker: com.apzda.cloud.queqiao.broker.demo.DemoBroker

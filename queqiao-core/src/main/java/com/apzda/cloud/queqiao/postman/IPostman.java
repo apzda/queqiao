@@ -16,9 +16,9 @@
  */
 package com.apzda.cloud.queqiao.postman;
 
-import com.apzda.cloud.queqiao.config.NotificationConfig;
+import com.apzda.cloud.queqiao.notify.NotifyContext;
 import jakarta.annotation.Nonnull;
-import org.springframework.context.ApplicationContext;
+import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -27,14 +27,16 @@ import org.springframework.context.ApplicationContext;
  **/
 public interface IPostman {
 
-	default boolean init(@Nonnull NotificationConfig config, @Nonnull ApplicationContext context) {
-		return true;
+	String getId();
+
+	/**
+	 * 如果有多个同步通知处理器，那么需要所有
+	 */
+	default boolean isSync() {
+		return false;
 	}
 
-	default void destroy() {
-
-	}
-
-	void delivery();
+	@Nonnull
+	ServerResponse notify(NotifyContext context);
 
 }

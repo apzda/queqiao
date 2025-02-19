@@ -16,10 +16,12 @@
  */
 package com.apzda.cloud.queqiao.config;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,9 +32,19 @@ import java.util.Map;
 @Data
 public class NotificationConfig {
 
-	@NotBlank
+	// 邮递员
 	private String postman;
 
+	// SpEl表达式
+	private List<String> filter = new ArrayList<>();
+
+	// 收件人
+	private String receipt;
+
+	// 重试
+	private List<Duration> retries = List.of(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(5));
+
+	// 额外配置
 	private Map<String, String> options = new HashMap<>();
 
 }

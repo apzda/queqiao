@@ -18,6 +18,7 @@ package com.apzda.cloud.queqiao.handler;
 
 import com.apzda.cloud.queqiao.broker.BrokerManager;
 import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -47,6 +48,7 @@ public class RelayHandlerFunction implements HandlerFunction<ServerResponse> {
 		val upstream = upstreams.get(0);
 		log.debug("Received request to upstream : {}", upstream);
 		try {
+			request.attributes().put(QueQiaoVals.BROKER_REQUEST_WRAPPER, HttpBrokerRequestWrapper.from(request));
 			request.attributes()
 				.put(QueQiaoVals.CONTENT_CACHING_REQUEST_WRAPPER,
 						new ContentCachingRequestWrapper(request.servletRequest()));

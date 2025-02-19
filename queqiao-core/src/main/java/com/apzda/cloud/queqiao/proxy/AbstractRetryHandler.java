@@ -19,6 +19,7 @@ package com.apzda.cloud.queqiao.proxy;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
 import jakarta.annotation.Nonnull;
 import lombok.val;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
@@ -57,6 +58,11 @@ public abstract class AbstractRetryHandler implements IRetryHandler {
 			return retryHttpCodes.contains(status);
 		}
 
+		return false;
+	}
+
+	@Override
+	public boolean needRenotify(ResponseEntity<String> response) {
 		return false;
 	}
 

@@ -18,6 +18,8 @@ package com.apzda.cloud.queqiao.config;
 
 import com.apzda.cloud.gsvc.gtw.filter.HttpHeadersFilter;
 import com.apzda.cloud.queqiao.broker.BrokerManager;
+import com.apzda.cloud.queqiao.postman.HttpPostman;
+import com.apzda.cloud.queqiao.postman.IPostman;
 import com.apzda.cloud.queqiao.proxy.IHttpProxy;
 import com.apzda.cloud.queqiao.proxy.QueQiaoHttpProxy;
 import io.netty.channel.ChannelOption;
@@ -85,6 +87,18 @@ public class QueQiaoSrvConfiguration {
 	IHttpProxy queqiaoHttpProxy(ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider,
 			@Qualifier("queqiaoWebClient") WebClient queqiaoWebClient, QueQiaoProperties properties) {
 		return new QueQiaoHttpProxy(headersFiltersProvider, queqiaoWebClient, properties.getProxy());
+	}
+
+	@Bean
+	@Qualifier("httpPostman")
+	IPostman httpPostman(IHttpProxy httpProxy) {
+		return new HttpPostman(true, httpProxy);
+	}
+
+	@Bean
+	@Qualifier("asyncHttpPostman")
+	IPostman asyncHttpPostman(IHttpProxy httpProxy) {
+		return new HttpPostman(false, httpProxy);
 	}
 
 }

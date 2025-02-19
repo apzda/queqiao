@@ -63,12 +63,17 @@ public class BrokerConfig {
 	private List<Integer> retryHttpCodes = new ArrayList<>();
 
 	// 重试次数
-	private int retryTimes = 5;
+	private int retryTimes = 3;
 
 	/**
 	 * 重试间隔
 	 */
 	@DurationUnit(ChronoUnit.SECONDS)
 	private Duration retryInterval = Duration.ofSeconds(1);
+
+	/**
+	 * 通知配置
+	 */
+	private List<NotificationConfig> notifications = new ArrayList<>();
 
 }
