@@ -22,8 +22,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
-import java.net.URISyntaxException;
-
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
@@ -39,7 +37,7 @@ public interface IBroker {
 	}
 
 	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request) throws URISyntaxException;
+	ServerResponse onRequest(@Nonnull ServerRequest request);
 
 	@Nonnull
 	ServerResponse onCallback(@Nonnull ServerRequest request);

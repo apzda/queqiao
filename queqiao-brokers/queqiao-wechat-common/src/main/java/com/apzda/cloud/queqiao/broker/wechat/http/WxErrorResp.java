@@ -18,9 +18,9 @@ package com.apzda.cloud.queqiao.broker.wechat.http;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.annotation.Nonnull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.chanjar.weixin.common.error.WxError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,6 @@ import java.util.Map;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class WxErrorResp {
 
 	private static final Map<Integer, String> errors = new HashMap<>() {
@@ -229,6 +228,16 @@ public class WxErrorResp {
 	public WxErrorResp(int errcode) {
 		this.errcode = errcode;
 		this.errmsg = errors.getOrDefault(errcode, "未知错误");
+	}
+
+	public WxErrorResp(int errcode, String errmsg) {
+		this.errcode = errcode;
+		this.errmsg = errors.getOrDefault(errcode, errmsg);
+	}
+
+	public WxErrorResp(@Nonnull WxError error) {
+		this.errcode = error.getErrorCode();
+		this.errmsg = error.getErrorMsg();
 	}
 
 	@Nonnull

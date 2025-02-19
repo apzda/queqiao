@@ -18,7 +18,6 @@ package com.apzda.cloud.queqiao.broker.demo;
 
 import com.apzda.cloud.queqiao.broker.AbstractHttpBroker;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
-import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import jakarta.annotation.Nonnull;
 import lombok.val;
@@ -26,8 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URISyntaxException;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -49,14 +46,14 @@ public class DemoBroker extends AbstractHttpBroker {
 
 	@Nonnull
 	@Override
-	public ServerResponse onRequest(@Nonnull ServerRequest request) throws URISyntaxException {
+	public ServerResponse onRequest(@Nonnull ServerRequest request) {
 		val serverRequest = changeTarget(request);
 
 		val uri = UriComponentsBuilder.fromUriString(serverRequest.uri().toString())
 			.replacePath("/_" + serverRequest.uri().getPath())
 			.build()
 			.toUri();
-		serverRequest.attribute(QueQiaoVals.BROKER_REQUEST_WRAPPER).orElse(serverRequest);
+
 		val req = ServerRequest.from(serverRequest).uri(uri).build();
 		return forward(req, retryHandler);
 	}

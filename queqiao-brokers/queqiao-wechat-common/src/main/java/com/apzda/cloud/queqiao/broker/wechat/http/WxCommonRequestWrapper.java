@@ -52,7 +52,7 @@ public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 	public WxCommonRequestWrapper(@Nonnull ServerRequest request) {
 		super(request);
 		for (String field : fields) {
-			params.put(field, request.param(field).orElse(null));
+			request.param(field).ifPresent(value -> this.params.put(field, value));
 		}
 	}
 
@@ -117,6 +117,7 @@ public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 		return params.get("access_token");
 	}
 
+	@SuppressWarnings("all")
 	public boolean checkAuthentication(BrokerConfig config) throws Exception {
 		val secret = getSecret();
 		val appid = getAppid();
@@ -130,9 +131,7 @@ public class WxCommonRequestWrapper extends HttpBrokerRequestWrapper {
 	public MultiValueMap<String, String> queryParams() {
 		val mParams = new LinkedMultiValueMap<String, String>();
 		for (Map.Entry<String, String> entry : params.entrySet()) {
-			if (entry.getValue() != null) {
-				mParams.add(entry.getKey(), entry.getValue());
-			}
+			mParams.add(entry.getKey(), entry.getValue());
 		}
 		return mParams;
 	}

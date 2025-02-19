@@ -205,7 +205,7 @@ public class QueQiaoHttpProxy implements IHttpProxy {
 	private ServerResponse doRetry(@Nonnull ServerRequest oriRequest, @Nonnull IRetryHandler retry, int retried) {
 		try {
 			TimeUnit.MILLISECONDS.sleep(retry.getRetryInterval().toMillis());
-			log.warn("Retrying {}", oriRequest.uri());
+			log.warn("Retrying({}) {}", retried, oriRequest.uri());
 			return handle_(retry.createRetryRequest(oriRequest), retry, retried + 1);
 		}
 		catch (InterruptedException ie) {

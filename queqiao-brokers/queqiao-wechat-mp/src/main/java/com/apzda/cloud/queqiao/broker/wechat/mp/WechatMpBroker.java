@@ -34,6 +34,7 @@ import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import me.chanjar.weixin.common.error.WxErrorException;
+import me.chanjar.weixin.common.error.WxRuntimeException;
 import me.chanjar.weixin.common.redis.WxRedisOps;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
@@ -50,7 +51,7 @@ import org.springframework.web.servlet.function.ServerResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -170,7 +171,7 @@ public class WechatMpBroker extends AbstractHttpBroker {
 
 	@Nonnull
 	@Override
-	public ServerResponse onRequest(@Nonnull ServerRequest request) throws URISyntaxException {
+	public ServerResponse onRequest(@Nonnull ServerRequest request) {
 		val query = new WxMpRequestWrapper(request);
 		val uri = request.uri();
 		val path = uri.getPath();
@@ -222,7 +223,7 @@ public class WechatMpBroker extends AbstractHttpBroker {
 		}
 	}
 
-	private ServerResponse checkAccessToken(WxMpRequestWrapper query, String uri) {
+	private ServerResponse checkAccessToken(@Nonnull WxMpRequestWrapper query, String uri) {
 		var accessToken = query.getAccessToken();
 		if (StringUtils.isBlank(accessToken) || !storage.exist(accessToken)) {
 			// 不合法的 access_token
@@ -268,19 +269,20 @@ public class WechatMpBroker extends AbstractHttpBroker {
 				return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(wxAccessToken);
 			}
 			catch (WxErrorException e) {
-				log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
+				log.warn("Can't get access token[{}] - {}", query.getAppid(), e.getMessage());
 				val error = e.getError();
 				return ServerResponse.ok()
 					.contentType(MediaType.APPLICATION_JSON)
-					.body(error != null ? error : WxErrorResp.error(-1));
-			}
-			catch (Exception e) {
-				log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage(), e);
-				return ServerResponse.status(502).build();
+					.body(error != null ? new WxErrorResp(error) : WxErrorResp.error(-1));
 			}
 		}
 		catch (Exception e) {
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(-1));
+			log.error("Can't get access token[{}] - {}", query.getAppid(), e.getMessage());
+			if (e instanceof UnknownHostException || e instanceof WxRuntimeException) {
+				return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(WxErrorResp.error(-1));
+			}
+
+			return ServerResponse.status(502).body(e.getMessage());
 		}
 	}
 

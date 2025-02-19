@@ -91,7 +91,7 @@ public class WxMpRetryHandler extends AbstractRetryHandler {
 					return true;
 				}
 				catch (WxErrorException e) {
-					log.warn("Can't get access token[{}] - {}", config.getAppId(), e.getError());
+					log.warn("Stop Retry since can't refresh accessToken[{}] - {}", config.getAppId(), e.getError());
 					return false;
 				}
 			}
