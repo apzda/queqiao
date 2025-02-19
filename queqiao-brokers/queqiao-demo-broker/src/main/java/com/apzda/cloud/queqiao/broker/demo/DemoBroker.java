@@ -36,8 +36,8 @@ public class DemoBroker extends AbstractHttpBroker {
 	private IRetryHandler retryHandler;
 
 	@Override
-	public boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		if (!super.setup(config, context)) {
+	public boolean setup(String id, @Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+		if (!super.setup(id, config, context)) {
 			return false;
 		}
 		retryHandler = new DemoRetryHandler(config);

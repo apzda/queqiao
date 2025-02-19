@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Fengz Ning (windywany@gmail.com)
+ * Copyright (C) 2025-2025 Fengz Ning (windywany@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,32 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.queqiao.broker;
-
-import com.apzda.cloud.queqiao.config.BrokerConfig;
-import jakarta.annotation.Nonnull;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.servlet.function.ServerRequest;
-import org.springframework.web.servlet.function.ServerResponse;
+package com.apzda.cloud.queqiao.wx;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface IBroker {
+public interface WxConst {
 
-	default boolean setup(String id, @Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		return true;
-	}
+	String WX_MP_PREFIX = "/_wx_mp";
 
-	default void destroy() {
-	}
+	String WX_API_PREFIX = "/_wx_api";
 
-	@Nonnull
-	ServerResponse onRequest(@Nonnull ServerRequest request);
+	String WX_OPEN_PREFIX = "/_wx_open";
 
-	@Nonnull
-	ServerResponse onCallback(@Nonnull ServerRequest request);
+	String WX_REAL_HOST_HEADER = "X-Wx-Host";
+
+	String UPSTREAM_HEADER = "X-Upstream";
 
 }

@@ -16,7 +16,7 @@
  */
 package com.apzda.cloud.queqiao.client.controller;
 
-import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.wx.WxConst;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
@@ -47,10 +47,9 @@ public class DemoController {
 
 	@PostMapping("/_/demoA")
 	public List<String> demoA(@RequestParam("file") MultipartFile file, @RequestParam("email") String email,
-			@RequestParam("name") String name)
-
+			@RequestParam("name") String name, @RequestParam("dockerFile") MultipartFile dockerFile)
 			throws IOException {
-		return List.of(email, name, new String(file.getBytes()));
+		return List.of(email, name, new String(file.getBytes()), new String(dockerFile.getBytes()));
 	}
 
 	@GetMapping("/test/demoA")
@@ -66,15 +65,14 @@ public class DemoController {
 		// 设置请求头
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		headers.add(QueQiaoVals.UPSTREAM_HEADER, "simple");
+		headers.add(WxConst.UPSTREAM_HEADER, "simple");
 		// 创建 HttpEntity
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
 
 		// 发送请求
 		RestTemplate restTemplate = new RestTemplate();
-		String response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class).getBody();
 
-		return response;
+		return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class).getBody();
 	}
 
 }

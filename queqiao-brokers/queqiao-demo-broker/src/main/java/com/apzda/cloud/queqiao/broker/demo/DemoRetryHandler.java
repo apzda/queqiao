@@ -19,12 +19,16 @@ package com.apzda.cloud.queqiao.broker.demo;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
 import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
 import com.apzda.cloud.queqiao.proxy.AbstractRetryHandler;
+import com.apzda.cloud.queqiao.utils.MultipartBodyUtil;
 import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.servlet.function.ServerRequest;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -32,22 +36,29 @@ import java.util.List;
  * @version 1.0.0
  * @since 1.0.0
  **/
+@Slf4j
 public class DemoRetryHandler extends AbstractRetryHandler {
 
-    public DemoRetryHandler(@Nonnull BrokerConfig config) {
-        super(config);
-    }
+	public DemoRetryHandler(@Nonnull BrokerConfig config) {
+		super(config);
+	}
 
-    @Override
+	@Override
 	public ServerRequest createRetryRequest(@Nonnull ServerRequest request) {
 		try {
 			val wrapper = HttpBrokerRequestWrapper.from(request);
 			val multipartData = wrapper.getMultipartData();
 			if (multipartData != null) {
 				multipartData.put("name", List.of(new HttpEntity<>("DemoBroker")));
+				val map = new LinkedMultiValueMap<String, Object>();
+				map.add("dockerFile", new File("./README.md"));
+				MultipartBodyUtil.merge(map, multipartData);
+
+				wrapper.setMultipartData(multipartData);
 			}
 		}
-		catch (Exception ignored) {
+		catch (Exception e) {
+			log.error(e.getMessage(), e);
 		}
 		return request;
 	}

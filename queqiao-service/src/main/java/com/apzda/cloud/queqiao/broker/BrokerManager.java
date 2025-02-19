@@ -75,7 +75,7 @@ public abstract class BrokerManager implements ApplicationContextAware, Applicat
 							broker = BeanUtils.instantiateClass(config.getBroker());
 						}
 						try {
-							broker.setup(config, applicationContext);
+							broker.setup(brokerId, config, applicationContext);
 							log.info("Broker setup successfully: {} - {}", brokerId,
 									properties.theCallbackPath(brokerId));
 							return broker;

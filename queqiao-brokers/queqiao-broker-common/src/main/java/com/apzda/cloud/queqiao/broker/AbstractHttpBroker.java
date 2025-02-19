@@ -37,11 +37,14 @@ import org.springframework.web.util.UriComponentsBuilder;
  **/
 public abstract class AbstractHttpBroker implements IBroker {
 
+	protected String id;
+
 	protected BrokerConfig config;
 
 	protected IHttpProxy httpProxy;
 
-	public boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+	public boolean setup(String id, @Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+		this.id = id;
 		this.config = config;
 		this.httpProxy = context.getBean(IHttpProxy.class);
 		return true;

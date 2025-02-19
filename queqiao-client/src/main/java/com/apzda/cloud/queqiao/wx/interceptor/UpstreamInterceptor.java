@@ -16,8 +16,8 @@
  */
 package com.apzda.cloud.queqiao.wx.interceptor;
 
-import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import com.apzda.cloud.queqiao.wx.WxClientMpProperties;
+import com.apzda.cloud.queqiao.wx.WxConst;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.http.HttpRequest;
@@ -53,16 +53,16 @@ public class UpstreamInterceptor implements HttpRequestInterceptor {
 		if (httpRequest instanceof HttpRequestWrapper wrapper) {
 			var uri = wrapper.getRequestLine().getUri();
 			var realHost = "";
-			if (uri.startsWith(QueQiaoVals.WX_MP_PREFIX)) {
-				uri = uri.substring(QueQiaoVals.WX_MP_PREFIX.length());
+			if (uri.startsWith(WxConst.WX_MP_PREFIX)) {
+				uri = uri.substring(WxConst.WX_MP_PREFIX.length());
 				realHost = "mpHost";
 			}
-			else if (uri.startsWith(QueQiaoVals.WX_API_PREFIX)) {
-				uri = uri.substring(QueQiaoVals.WX_API_PREFIX.length());
+			else if (uri.startsWith(WxConst.WX_API_PREFIX)) {
+				uri = uri.substring(WxConst.WX_API_PREFIX.length());
 				realHost = "apiHost";
 			}
-			else if (uri.startsWith(QueQiaoVals.WX_OPEN_PREFIX)) {
-				uri = uri.substring(QueQiaoVals.WX_OPEN_PREFIX.length());
+			else if (uri.startsWith(WxConst.WX_OPEN_PREFIX)) {
+				uri = uri.substring(WxConst.WX_OPEN_PREFIX.length());
 				realHost = "openHost";
 			}
 			else {
@@ -71,7 +71,7 @@ public class UpstreamInterceptor implements HttpRequestInterceptor {
 			}
 			try {
 				wrapper.setURI(new URI(uri));
-				wrapper.addHeader(QueQiaoVals.WX_REAL_HOST_HEADER, realHost);
+				wrapper.addHeader(WxConst.WX_REAL_HOST_HEADER, realHost);
 
 				val upstreamHeader = properties.getUpstreamHeader();
 				wrapper.addHeader(upstreamHeader, id);

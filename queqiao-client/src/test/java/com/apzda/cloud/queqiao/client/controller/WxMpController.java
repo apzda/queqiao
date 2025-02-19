@@ -64,8 +64,8 @@ public class WxMpController {
 		WxMpTemplateMessage msg = WxMpTemplateMessage.builder()
 			.clientMsgId(String.valueOf(DateUtil.current()))
 			.toUser("o7L3v7Ndtc5RDJGiCP01N0hjJPy8")
-			.templateId("wOtTv16Ysn70UXNT6NaX78gk9ae544yQIN7RKqnDkL0")
-			.data(List.of(new WxMpTemplateData("v1", "Hello World!")))
+			.templateId("LheBvLu605JCqkbGiELQ8cPOb2aItwiOcmNOJJ_foiI")
+			.data(List.of(new WxMpTemplateData("v1", "鹊桥")))
 			.build();
 
 		return ts.sendTemplateMsg(msg);

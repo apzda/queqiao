@@ -18,26 +18,19 @@ package com.apzda.cloud.queqiao.http;
 
 import com.apzda.cloud.gsvc.utils.ResponseUtils;
 import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
+import com.apzda.cloud.queqiao.utils.MultipartBodyUtil;
 import com.google.common.base.Joiner;
 import jakarta.annotation.Nonnull;
-import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.util.ContentCachingRequestWrapper;
-import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 
@@ -166,8 +159,7 @@ public class HttpBrokerRequestWrapper {
 						multipartData = new LinkedMultiValueMap<>();
 						val data = delegate.multipartData();
 						if (!CollectionUtils.isEmpty(data)) {
-							val builder = generateMultipartFormData(data);
-							multipartData = builder.build();
+							multipartData = MultipartBodyUtil.fromMap(data).build();
 						}
 					}
 					catch (IOException e) {
@@ -193,50 +185,6 @@ public class HttpBrokerRequestWrapper {
 
 	public <T> T getRequestBody(Class<T> clazz) throws IOException {
 		return ResponseUtils.OBJECT_MAPPER.readValue(getRequestBody(), clazz);
-	}
-
-	@Nonnull
-	private MultipartBodyBuilder generateMultipartFormData(@Nonnull MultiValueMap<String, Part> multiValueMap) {
-		val builder = new MultipartBodyBuilder();
-
-		for (val name : multiValueMap.keySet()) {
-			val parts = multiValueMap.get(name);
-			if (CollectionUtils.isEmpty(parts)) {
-				continue;
-			}
-			for (val part : parts) {
-				val contentType = part.getContentType();
-				MediaType mediaType = null;
-				if (contentType != null) {
-					try {
-						mediaType = MediaType.parseMediaType(contentType);
-					}
-					catch (Exception ignored) {
-					}
-				}
-				builder.part(name, decode(part), mediaType);
-			}
-		}
-		return builder;
-	}
-
-	@Nonnull
-	private AsyncPart decode(@Nonnull Part part) {
-		val httpHeaders = new HttpHeaders();
-		val headerNames = part.getHeaderNames();
-		if (!CollectionUtils.isEmpty(headerNames)) {
-			headerNames.forEach(headerName -> httpHeaders.add(headerName, part.getHeader(headerName)));
-		}
-		return new AsyncPart(part.getName(), part, httpHeaders);
-	}
-
-	record AsyncPart(String name, Part part,
-			HttpHeaders headers) implements org.springframework.http.codec.multipart.Part {
-		@Override
-		@Nonnull
-		public Flux<DataBuffer> content() {
-			return DataBufferUtils.readInputStream(part::getInputStream, DefaultDataBufferFactory.sharedInstance, 1024);
-		}
 	}
 
 }

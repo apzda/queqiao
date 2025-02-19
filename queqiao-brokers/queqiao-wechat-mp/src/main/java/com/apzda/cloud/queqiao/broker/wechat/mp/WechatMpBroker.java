@@ -88,8 +88,8 @@ public class WechatMpBroker extends AbstractHttpBroker {
 	}
 
 	@Override
-	public boolean setup(@Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
-		if (!super.setup(config, context)) {
+	public boolean setup(String id, @Nonnull BrokerConfig config, @Nonnull ApplicationContext context) {
+		if (!super.setup(id, config, context)) {
 			return false;
 		}
 
@@ -138,7 +138,10 @@ public class WechatMpBroker extends AbstractHttpBroker {
 				val expiredAt = wxMpService.getWxMpConfigStorage().getExpiresTime();
 				val force = expiredAt - DateUtil.currentSeconds() <= 300;
 				val accessToken = wxMpService.getAccessToken(force);
-				log.debug("Refresh(force={}) accessToken[{}] successfully: {}", force, conf.getAppId(), accessToken);
+				if (log.isTraceEnabled()) {
+					log.trace("Refresh(force={}) accessToken[{}] successfully: {}", force, conf.getAppId(),
+							accessToken);
+				}
 
 				try {
 					val at = storage.load(accessToken, StringData.class);
@@ -156,7 +159,7 @@ public class WechatMpBroker extends AbstractHttpBroker {
 			}
 		}, 0, 60, TimeUnit.SECONDS);
 
-		log.info("WechatMpBroker setup complete: {} - {}", config, extraConfig);
+		log.info("WechatMpBroker({}) Setup complete: {} - {}", id, config, extraConfig);
 		return true;
 	}
 

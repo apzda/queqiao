@@ -27,12 +27,6 @@ public interface QueQiaoVals {
 
 	String WX_REAL_HOST_HEADER = "X-Wx-Host";
 
-	String WX_MP_PREFIX = "/_wx_mp";
-
-	String WX_API_PREFIX = "/_wx_api";
-
-	String WX_OPEN_PREFIX = "/_wx_open";
-
 	String BROKER_REQUEST_WRAPPER = "QQ_BROKER_REQ_WRAPPER";
 
 	String CONTENT_CACHING_REQUEST_WRAPPER = "QQ_C_C_REQ_WRAPPER";

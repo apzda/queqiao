@@ -16,10 +16,10 @@
  */
 package com.apzda.cloud.queqiao.autoconfig;
 
-import com.apzda.cloud.queqiao.constrant.QueQiaoVals;
 import com.apzda.cloud.queqiao.http.HttpClientProperties;
 import com.apzda.cloud.queqiao.http.WxApacheHttpClientBuilder;
 import com.apzda.cloud.queqiao.wx.WxClientMpProperties;
+import com.apzda.cloud.queqiao.wx.WxConst;
 import com.apzda.cloud.queqiao.wx.interceptor.UpstreamInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -75,9 +75,9 @@ public class QueQiaoMpAutoConfiguration {
 			throw new IllegalArgumentException(String.format("weixin.mp.host[%s] - %s", host, e.getMessage()));
 		}
 		val wxMpHostConfig = new WxMpHostConfig();
-		wxMpHostConfig.setMpHost(String.format("%s%s", host, QueQiaoVals.WX_MP_PREFIX));
-		wxMpHostConfig.setApiHost(String.format("%s%s", host, QueQiaoVals.WX_API_PREFIX));
-		wxMpHostConfig.setOpenHost(String.format("%s%s", host, QueQiaoVals.WX_OPEN_PREFIX));
+		wxMpHostConfig.setMpHost(String.format("%s%s", host, WxConst.WX_MP_PREFIX));
+		wxMpHostConfig.setApiHost(String.format("%s%s", host, WxConst.WX_API_PREFIX));
+		wxMpHostConfig.setOpenHost(String.format("%s%s", host, WxConst.WX_OPEN_PREFIX));
 
 		service.setMultiConfigStorages(configs.entrySet().stream().map(mp -> {
 			val id = mp.getKey();
