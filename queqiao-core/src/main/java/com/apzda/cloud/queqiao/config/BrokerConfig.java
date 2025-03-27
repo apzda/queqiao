@@ -72,7 +72,7 @@ public class BrokerConfig {
 	private Duration retryInterval = Duration.ofSeconds(1);
 
 	/**
-	 * 通知配置
+	 * 通知(回调)配置
 	 */
 	private List<NotificationConfig> notifications = new ArrayList<>();
 

@@ -17,7 +17,7 @@
 package com.apzda.cloud.queqiao.postman;
 
 import com.apzda.cloud.queqiao.http.HttpBrokerRequestWrapper;
-import com.apzda.cloud.queqiao.notify.NotifyContext;
+import com.apzda.cloud.queqiao.notify.Package;
 import com.apzda.cloud.queqiao.proxy.IHttpProxy;
 import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import jakarta.annotation.Nonnull;
@@ -53,7 +53,7 @@ public class HttpPostman implements IPostman {
 
 	@Nonnull
 	@Override
-	public ServerResponse notify(@Nonnull NotifyContext context) {
+	public ServerResponse delivery(@Nonnull Package context) {
 		val request = context.request();
 		val receipt = UriComponentsBuilder.fromUriString(context.receipt()).build();
 		val oriUri = request.uri();

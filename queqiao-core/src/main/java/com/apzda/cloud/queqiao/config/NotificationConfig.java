@@ -32,10 +32,10 @@ import java.util.Map;
 @Data
 public class NotificationConfig {
 
-	// 邮递员
+	// 邮递员ID
 	private String postman;
 
-	// SpEl表达式
+	// QLExpress4表达式
 	private List<String> filter = new ArrayList<>();
 
 	// 收件人

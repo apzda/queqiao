@@ -19,7 +19,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>QLExpress4</artifactId>
-            <version>${QLExpress4.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

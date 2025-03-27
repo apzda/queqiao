@@ -16,7 +16,7 @@
  */
 package com.apzda.cloud.queqiao.postman;
 
-import com.apzda.cloud.queqiao.notify.NotifyContext;
+import com.apzda.cloud.queqiao.notify.Package;
 import jakarta.annotation.Nonnull;
 import org.springframework.web.servlet.function.ServerResponse;
 
@@ -30,13 +30,13 @@ public interface IPostman {
 	String getId();
 
 	/**
-	 * 如果有多个同步通知处理器，那么需要所有
+	 * 如果有多个同步投递员，只会将包裹交给第一个投递员
 	 */
 	default boolean isSync() {
 		return false;
 	}
 
 	@Nonnull
-	ServerResponse notify(NotifyContext context);
+	ServerResponse delivery(Package context);
 
 }

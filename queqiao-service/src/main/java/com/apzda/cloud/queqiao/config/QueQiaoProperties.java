@@ -36,14 +36,29 @@ import java.util.Map;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class QueQiaoProperties {
 
+	/**
+	 * 回调URL
+	 */
 	private String url = "http://localhost";
 
+	/**
+	 * 回调路径
+	 */
 	private String callbackPath = "";
 
+	/**
+	 * 请求头名(用于路由)
+	 */
 	private String upstreamHeader = QueQiaoVals.UPSTREAM_HEADER;
 
+	/**
+	 * 代理人配置
+	 */
 	private Map<String, BrokerConfig> broker = new HashMap<>();
 
+	/**
+	 * HTTP代理配置
+	 */
 	private HttpProxyConfig proxy = new HttpProxyConfig();
 
 	public String theCallbackPath(String upstream) {

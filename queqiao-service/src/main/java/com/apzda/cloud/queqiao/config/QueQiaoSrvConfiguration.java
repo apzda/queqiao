@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,6 +27,7 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.val;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -37,6 +38,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,6 +48,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(QueQiaoProperties.class)
+// @EnableAsync
 public class QueQiaoSrvConfiguration {
 
 	@Bean
@@ -57,7 +60,7 @@ public class QueQiaoSrvConfiguration {
 
 	@Bean
 	@Qualifier("queqiaoWebClient")
-	WebClient queqiaoWebClient(WebClient.Builder builder, QueQiaoProperties properties) {
+	WebClient queqiaoWebClient(@Autowired(required = false) WebClient.Builder builder, QueQiaoProperties properties) {
 		val proxy = properties.getProxy();
 		val readTimeout = proxy.getReadTimeout();
 		val writeTimeout = proxy.getWriteTimeout();
@@ -78,6 +81,8 @@ public class QueQiaoSrvConfiguration {
 		if (connectTimeout.toMillis() > 0) {
 			httpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout.toMillis());
 		}
+
+		builder = Optional.ofNullable(builder).orElse(WebClient.builder());
 
 		return builder.clientConnector(new ReactorClientHttpConnector(httpClient)).build();
 	}

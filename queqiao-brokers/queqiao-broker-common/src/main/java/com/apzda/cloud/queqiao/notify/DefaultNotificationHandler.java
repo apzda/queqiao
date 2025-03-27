@@ -98,15 +98,15 @@ public class DefaultNotificationHandler implements INotificationHandler {
 	@Override
 	public ServerResponse notify(@Nonnull IBroker broker, @Nullable Object response, String body,
 			@Nonnull ServerRequest request) {
-		val context = new NotifyContext(broker, response, body, request, config.getReceipt(), config.getOptions());
+		val context = new Package(broker, response, body, request, config.getReceipt(), config.getOptions());
 		return notify(context, 0);
 	}
 
 	@Nullable
-	ServerResponse notify(NotifyContext context, int retried) {
+	ServerResponse notify(final Package context, final int retried) {
 		try {
 			HttpBrokerRequestWrapper.from(context.request()).setRequestBody(context.body());
-			val response = postman.notify(context);
+			val response = postman.delivery(context);
 			if (response.statusCode().is5xxServerError()) {
 				return doRetry(context, retried);
 			}
@@ -117,7 +117,7 @@ public class DefaultNotificationHandler implements INotificationHandler {
 		}
 	}
 
-	ServerResponse doRetry(NotifyContext context, int retried) {
+	ServerResponse doRetry(final Package context, final int retried) {
 		val retries = config.getRetries();
 		if (retried > retries.size() - 1) {
 			log.error("""
@@ -128,8 +128,8 @@ public class DefaultNotificationHandler implements INotificationHandler {
 			return null;
 		}
 		val duration = retries.get(retried);
+
 		try {
-			// 会卡死
 			TimeUnit.MILLISECONDS.sleep(duration.toMillis());
 		}
 		catch (InterruptedException e) {

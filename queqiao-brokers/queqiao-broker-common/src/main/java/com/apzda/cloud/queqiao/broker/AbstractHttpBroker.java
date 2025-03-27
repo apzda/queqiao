@@ -81,7 +81,7 @@ public abstract class AbstractHttpBroker implements IBroker {
 					throw new IllegalArgumentException(
 							String.format("Notification postman of broker[%s] not found: \n", id) + notification);
 				}
-				val handler = new DefaultNotificationHandler(postmanBean, notification);
+				val handler = createNotificationHandler(postmanBean, notification);
 				if (postmanBean.isSync()) {
 					syncHandlers.add(handler);
 				}
@@ -151,12 +151,13 @@ public abstract class AbstractHttpBroker implements IBroker {
 			}
 		}
 
-		for (INotificationHandler syncHandler : syncHandlers) {
+		for (val syncHandler : syncHandlers) {
 			if (syncHandler.matches(context)) {
 				atomicInteger.incrementAndGet();
 				return syncHandler.notify(this, response, body, request);
 			}
 		}
+
 		if (atomicInteger.get() == 0) {
 			log.warn("""
 					No Postman found for broker[{}]
@@ -166,6 +167,12 @@ public abstract class AbstractHttpBroker implements IBroker {
 		}
 
 		return ServerResponse.ok().build();
+	}
+
+	@Nonnull
+	protected INotificationHandler createNotificationHandler(@Nonnull IPostman postman,
+			@Nonnull NotificationConfig config) {
+		return new DefaultNotificationHandler(postman, config);
 	}
 
 }

@@ -20,7 +20,6 @@ import com.apzda.cloud.queqiao.broker.AbstractHttpBroker;
 import com.apzda.cloud.queqiao.config.BrokerConfig;
 import com.apzda.cloud.queqiao.proxy.IRetryHandler;
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
 import lombok.val;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.function.ServerRequest;

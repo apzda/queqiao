@@ -26,6 +26,6 @@ import org.springframework.web.servlet.function.ServerRequest;
  * @version 1.0.0
  * @since 1.0.0
  **/
-public record NotifyContext(@Nonnull IBroker broker, @Nullable Object response, String body,
-                            @Nonnull ServerRequest request, String receipt, java.util.Map<String, String> options) {
+public record Package(@Nonnull IBroker broker, @Nullable Object response, String body, @Nonnull ServerRequest request,
+		String receipt, java.util.Map<String, String> options) {
 }

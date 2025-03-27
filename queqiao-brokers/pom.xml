@@ -17,6 +17,7 @@
         <module>queqiao-wechat-common</module>
         <module>queqiao-broker-common</module>
         <module>queqiao-demo-broker</module>
+        <module>queqiao-potman-rocketmq</module>
     </modules>
 
     <dependencyManagement>
