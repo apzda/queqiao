@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.apzda.cloud</groupId>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.2</version>
     </parent>
     <description>鹊桥中继器</description>
     <artifactId>queqiao</artifactId>
@@ -24,7 +24,7 @@
 
     <properties>
         <wx.java.version>4.7.3.B</wx.java.version>
-        <QLExpress4.version>4.0.0-beta.4</QLExpress4.version>
+        <QLExpress4.version>4.0.0-beta.6</QLExpress4.version>
     </properties>
 
     <dependencyManagement>
@@ -73,7 +73,7 @@
             <!-- third -->
             <dependency>
                 <groupId>com.alibaba</groupId>
-                <artifactId>QLExpress4</artifactId>
+                <artifactId>qlexpress4</artifactId>
                 <version>${QLExpress4.version}</version>
             </dependency>
 

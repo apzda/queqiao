@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -47,98 +47,102 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class DefaultNotificationHandler implements INotificationHandler {
 
-	private static final Express4Runner RUNNER = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
+    private static final Express4Runner RUNNER = new Express4Runner(InitOptions.DEFAULT_OPTIONS);
 
-	private static final QLOptions QL_OPTIONS = QLOptions.builder().cache(false).build();
+    private static final QLOptions QL_OPTIONS = QLOptions.builder().cache(false).build();
 
-	private final IPostman postman;
+    private final IPostman postman;
 
-	@Getter
-	private final NotificationConfig config;
+    @Getter
+    private final NotificationConfig config;
 
-	@Override
-	public boolean matches(Map<String, Object> context) {
-		if (config.getFilter().isEmpty()) {
-			return true;
-		}
+    @Override
+    public boolean matches(Map<String, Object> context) {
+        if (config.getFilter().isEmpty()) {
+            return true;
+        }
 
-		for (val filter : config.getFilter()) {
-			try {
-				val value = RUNNER.execute(filter, context, QL_OPTIONS);
+        for (val filter : config.getFilter()) {
+            try {
+                val rst = RUNNER.execute(filter, context, QL_OPTIONS);
+                if (rst == null) {
+                    continue;
+                }
 
-				if (value != null) {
-					if (value instanceof Boolean) {
-						return Boolean.TRUE.equals(value);
-					}
-					else if (value instanceof Collection<?> values) {
-						return !CollectionUtils.isEmpty(values);
-					}
-					else if (value instanceof Object[] values) {
-						return values.length > 0;
-					}
-					else if (value instanceof String strVal) {
-						return StringUtils.isNotBlank(strVal) && !"false".equalsIgnoreCase(strVal);
-					}
-					return true;
-				}
-			}
-			catch (Exception e) {
-				log.error("""
-						Parsing filter failed:
-						[Expression]: {}
-						[Context]:    {}
-						[Exception]:  {}""", filter, context, e.getMessage());
-			}
-		}
+                val value = rst.getResult();
+                if (value != null) {
+                    if (value instanceof Boolean v1) {
+                        return Boolean.TRUE.equals(v1);
+                    }
+                    else if (value instanceof Collection<?> values) {
+                        return !CollectionUtils.isEmpty(values);
+                    }
+                    else if (value instanceof Object[] values) {
+                        return values.length > 0;
+                    }
+                    else if (value instanceof String strVal) {
+                        return StringUtils.isNotBlank(strVal) && !"false".equalsIgnoreCase(strVal);
+                    }
+                    return true;
+                }
+            }
+            catch (Exception e) {
+                log.error("""
+                        Parsing filter failed:
+                        [Expression]: {}
+                        [Context]:    {}
+                        [Exception]:  {}""", filter, context, e.getMessage());
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	@Nullable
-	@Override
-	public ServerResponse notify(@Nonnull IBroker broker, @Nullable Object response, String body,
-			@Nonnull ServerRequest request) {
-		val context = new Package(broker, response, body, request, config.getReceipt(), config.getOptions());
-		return notify(context, 0);
-	}
+    @Nullable
+    @Override
+    public ServerResponse notify(@Nonnull IBroker broker, @Nullable Object response, String body,
+            @Nonnull ServerRequest request) {
+        val context = new Package(broker, response, body, request, config.getReceipt(), config.getOptions());
+        return notify(context, 0);
+    }
 
-	@Nullable
-	ServerResponse notify(final Package context, final int retried) {
-		try {
-			HttpBrokerRequestWrapper.from(context.request()).setRequestBody(context.body());
-			val response = postman.delivery(context);
-			if (response.statusCode().is5xxServerError()) {
-				return doRetry(context, retried);
-			}
-			return response;
-		}
-		catch (Exception e) {
-			return doRetry(context, retried);
-		}
-	}
+    @Nullable
+    ServerResponse notify(final Package context, final int retried) {
+        try {
+            HttpBrokerRequestWrapper.from(context.request()).setRequestBody(context.body());
+            val response = postman.delivery(context);
+            if (response.statusCode().is5xxServerError()) {
+                return doRetry(context, retried);
+            }
+            return response;
+        }
+        catch (Exception e) {
+            return doRetry(context, retried);
+        }
+    }
 
-	ServerResponse doRetry(final Package context, final int retried) {
-		val retries = config.getRetries();
-		if (retried > retries.size() - 1) {
-			log.error("""
-					Notification send failed:
-					[Retried]: {}
-					[Context]: {}
-					""", retried, context);
-			return null;
-		}
-		val duration = retries.get(retried);
+    ServerResponse doRetry(final Package context, final int retried) {
+        val retries = config.getRetries();
+        if (retried > retries.size() - 1) {
+            log.error("""
+                    Notification send failed:
+                    [Retried]: {}
+                    [Context]: {}
+                    """, retried, context);
+            return null;
+        }
+        val duration = retries.get(retried);
 
-		try {
-			TimeUnit.MILLISECONDS.sleep(duration.toMillis());
-		}
-		catch (InterruptedException e) {
-			log.error("Cannot Believe It - {}", e.getMessage());
-			return null;
-		}
+        try {
+            TimeUnit.MILLISECONDS.sleep(duration.toMillis());
+        }
+        catch (InterruptedException e) {
+            log.error("Cannot Believe It - {}", e.getMessage());
+            return null;
+        }
 
-		log.warn("Retrying({}) after {}ms - {}", retried + 1, duration.toMillis(), context.receipt());
-		return notify(context, retried + 1);
-	}
+        log.warn("Retrying({}) after {}ms - {}", retried + 1, duration.toMillis(), context.receipt());
+        return notify(context, retried + 1);
+    }
 
 }
