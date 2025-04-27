@@ -6,8 +6,9 @@
     <parent>
         <groupId>com.apzda.cloud</groupId>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
-        <version>3.4.2</version>
+        <version>3.4.3</version>
     </parent>
+
     <description>鹊桥中继器</description>
     <artifactId>queqiao</artifactId>
     <name>QueQiao</name>
