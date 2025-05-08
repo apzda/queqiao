@@ -6,8 +6,9 @@
     <parent>
         <groupId>com.apzda.cloud</groupId>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
-        <version>3.4.2</version>
+        <version>3.4.3</version>
     </parent>
+
     <description>鹊桥中继器</description>
     <artifactId>queqiao</artifactId>
     <name>QueQiao</name>
@@ -25,6 +26,8 @@
     <properties>
         <wx.java.version>4.7.4.B</wx.java.version>
         <QLExpress4.version>4.0.0-beta.6</QLExpress4.version>
+        <wx.java.version>4.7.4.B</wx.java.version>
+        <QLExpress4.version>4.0.0-beta.7</QLExpress4.version>
     </properties>
 
     <dependencyManagement>
