@@ -24,7 +24,7 @@
     </modules>
 
     <properties>
-        <wx.java.version>4.7.4.B</wx.java.version>
+        <wx.java.version>4.7.5.B</wx.java.version>
         <QLExpress4.version>4.0.0-beta.7</QLExpress4.version>
     </properties>
 
